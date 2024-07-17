@@ -28,7 +28,7 @@ const App = () => {
       }
     };
     fetchChatHistories();
-  }, [API_URL]);
+  }, [API_URL, currentChat]);
 
   const handleSelectChat = (sessionId) => {
     setCurrentChat(sessionId);
@@ -44,6 +44,7 @@ const App = () => {
         [newSessionId]: [],
       }));
       setCurrentChat(newSessionId);
+      setMessages([]);
     } catch (error) {
       console.error("Error starting new chat session:", error);
     }
@@ -51,29 +52,58 @@ const App = () => {
 
   const handleSendMessage = async (message) => {
     if (!currentChat) {
-      console.error("No chat session selected.");
-      return;
-    }
+      try {
+        const { data } = await axios.post(`${API_URL}/api/start`);
+        const newSessionId = data.sessionId;
+        setChats((prevChats) => ({
+          ...prevChats,
+          [newSessionId]: [],
+        }));
+        setCurrentChat(newSessionId);
 
-    const newMessage = { sender: "user", question: message, answer: "" };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-    setChats((prevChats) => ({
-      ...prevChats,
-      [currentChat]: [...prevChats[currentChat], newMessage],
-    }));
+        const newMessage = { sender: "user", question: message, answer: "" };
+        setMessages([newMessage]);
+        setChats((prevChats) => ({
+          ...prevChats,
+          [newSessionId]: [newMessage],
+        }));
 
-    try {
-      const { data } = await axios.post(`${API_URL}/api/ask`, {
-        sessionId: currentChat,
-        question: message,
-      });
-      setMessages(data.history);
+        const response = await axios.post(`${API_URL}/api/ask`, {
+          sessionId: newSessionId,
+          question: message,
+        });
+        setMessages(response.data.history);
+        setChats((prevChats) => ({
+          ...prevChats,
+          [newSessionId]: response.data.history,
+        }));
+      } catch (error) {
+        console.error("Error starting new chat session:", error);
+      }
+    } else {
+      const newMessage = { sender: "user", question: message, answer: "" };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
       setChats((prevChats) => ({
         ...prevChats,
-        [currentChat]: data.history,
+        [currentChat]: [...prevChats[currentChat], newMessage],
       }));
-    } catch (error) {
-      console.error(`Error sending message to session ${currentChat}:`, error);
+
+      try {
+        const response = await axios.post(`${API_URL}/api/ask`, {
+          sessionId: currentChat,
+          question: message,
+        });
+        setMessages(response.data.history);
+        setChats((prevChats) => ({
+          ...prevChats,
+          [currentChat]: response.data.history,
+        }));
+      } catch (error) {
+        console.error(
+          `Error sending message to session ${currentChat}:`,
+          error
+        );
+      }
     }
   };
 
