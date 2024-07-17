@@ -18,7 +18,6 @@ const App = () => {
       try {
         const { data } = await axios.get(`${API_URL}/api/chat-history`);
         setChats(data);
-
         const titles = Object.keys(data).map((sessionId) => {
           const firstEntry = data[sessionId][0];
           return firstEntry ? firstEntry.question : "No question";
@@ -34,7 +33,20 @@ const App = () => {
   const handleSelectChat = (sessionId) => {
     setCurrentChat(sessionId);
     setMessages(chats[sessionId]);
-    console.log("Selected chat messages:", chats[sessionId]);
+  };
+
+  const handleStartNewChat = async () => {
+    try {
+      const { data } = await axios.post(`${API_URL}/api/start`);
+      const newSessionId = data.sessionId;
+      setChats((prevChats) => ({
+        ...prevChats,
+        [newSessionId]: [],
+      }));
+      setCurrentChat(newSessionId);
+    } catch (error) {
+      console.error("Error starting new chat session:", error);
+    }
   };
 
   const handleSendMessage = async (message) => {
@@ -45,36 +57,29 @@ const App = () => {
 
     const newMessage = { sender: "user", question: message, answer: "" };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setChats((prevChats) => ({
+      ...prevChats,
+      [currentChat]: [...prevChats[currentChat], newMessage],
+    }));
 
     try {
-      const response = await axios.post(`${API_URL}/api/ask`, {
+      const { data } = await axios.post(`${API_URL}/api/ask`, {
         sessionId: currentChat,
         question: message,
       });
-      setMessages(response.data.history);
+      setMessages(data.history);
+      setChats((prevChats) => ({
+        ...prevChats,
+        [currentChat]: data.history,
+      }));
     } catch (error) {
       console.error(`Error sending message to session ${currentChat}:`, error);
     }
   };
 
-  const handleStartNewChat = async () => {
-    try {
-      const response = await axios.post(`${API_URL}/api/start`);
-      const newSessionId = response.data.sessionId;
-      setChats((prevChats) => ({
-        ...prevChats,
-        [newSessionId]: [],
-      }));
-      setCurrentChat(newSessionId);
-      setMessages([]);
-    } catch (error) {
-      console.error("Error starting new chat session:", error);
-    }
-  };
-
   const chatSessions = Object.keys(chats).map((sessionId, index) => ({
     sessionId,
-    title: sessionTitle[index] || sessionId,
+    title: sessionTitle[index] || "New chat",
   }));
 
   return (

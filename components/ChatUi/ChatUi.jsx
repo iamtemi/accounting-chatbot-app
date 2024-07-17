@@ -4,7 +4,8 @@ import "./ChatUi.scss";
 export default function ChatUi({ onSendMessage }) {
   const [message, setMessage] = useState("");
 
-  const handleSend = () => {
+  const handleSend = (e) => {
+    e.preventDefault();
     if (message.trim()) {
       onSendMessage(message);
       setMessage("");
@@ -12,7 +13,7 @@ export default function ChatUi({ onSendMessage }) {
   };
 
   return (
-    <form className="chat-ui">
+    <form className="chat-ui" onSubmit={handleSend}>
       <div className="input-group">
         <input
           type="text"
@@ -21,7 +22,7 @@ export default function ChatUi({ onSendMessage }) {
           className="input-group__input"
           placeholder="Type a message"
         />
-        <button onClick={handleSend} className="input-group__button">
+        <button type="submit" className="input-group__button">
           Send
         </button>
       </div>
