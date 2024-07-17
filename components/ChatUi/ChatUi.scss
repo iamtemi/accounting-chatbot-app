@@ -1,0 +1,30 @@
+.chat-ui {
+  padding: 20px;
+  background: #f4f4f4;
+  border-top: 1px solid #ddd;
+}
+
+.input-group {
+  display: flex;
+
+  &__input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+
+  &__button {
+    padding: 10px 20px;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: #0056b3;
+    }
+  }
+}

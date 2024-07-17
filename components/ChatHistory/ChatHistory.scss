@@ -1,0 +1,40 @@
+.chat-history {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.message {
+  margin-bottom: 5px;
+
+  &--question {
+    align-self: flex-end; /* Aligns the question to the right */
+    .message__text {
+      background: #007bff;
+      color: #fff;
+      text-align: right;
+    }
+  }
+
+  &--answer {
+    align-self: flex-start; /* Aligns the answer to the left */
+    .message__text {
+      background: #f1f1f1;
+      color: #000;
+      text-align: left;
+    }
+  }
+
+  &__text {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+  }
+}
